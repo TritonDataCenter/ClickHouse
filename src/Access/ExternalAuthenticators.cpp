@@ -105,15 +105,14 @@ void parseLDAPServer(LDAPClient::Params & params, const Poco::Util::AbstractConf
         params.bind_dn = auth_dn_prefix + "{user_name}" + auth_dn_suffix;
     }
 
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101227
     if (has_user_dn_detection)
     {
-        if (!params.user_dn_detection)
-        {
-            params.user_dn_detection.emplace();
-            params.user_dn_detection->attribute = "dn";
-        }
+	LDAPClient::SearchParams p = LDAPClient::SearchParams();
+	p.attribute = "dn";
+	p = params.user_dn_detection.value_or(p);
 
-        parseLDAPSearchParams(*params.user_dn_detection, config, ldap_server_config + ".user_dn_detection");
+        parseLDAPSearchParams(p, config, ldap_server_config + ".user_dn_detection");
     }
 
     if (has_verification_cooldown)
