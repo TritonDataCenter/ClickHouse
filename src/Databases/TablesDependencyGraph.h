@@ -160,6 +160,8 @@ private:
     {
         using is_transparent = void;
         size_t operator()(const NodeSharedPtr & left, const Node * right) const { return left.get() == right; }
+        size_t operator()(const Node * left, const NodeSharedPtr & right) const { return left == right.get(); }
+        size_t operator()(const Node * left, const Node * right) const { return left == right; }
         size_t operator()(const NodeSharedPtr & left, const NodeSharedPtr & right) const { return left == right; }
     };
 
