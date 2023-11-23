@@ -582,7 +582,7 @@ std::pair<Poco::URI, std::unique_ptr<ReadWriteBufferFromHTTP>> StorageURLSource:
                 continue;
             }
 
-            return std::make_tuple(request_uri, std::move(res));
+            return std::make_pair(request_uri, std::move(res));
         }
         catch (...)
         {
