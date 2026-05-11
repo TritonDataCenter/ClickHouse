@@ -392,7 +392,7 @@ std::shared_ptr<KeeperRequestForSession> IKeeperStateMachine::parseRequest(
 
         chassert(!buffer.eof());
 
-        request_for_session->digest.emplace();
+        request_for_session->digest = KeeperStorage::Digest();
         readIntBinary(request_for_session->digest->version, buffer);
         if (request_for_session->digest->version != KeeperDigestVersion::NO_DIGEST || !buffer.eof())
             readIntBinary(request_for_session->digest->value, buffer);
