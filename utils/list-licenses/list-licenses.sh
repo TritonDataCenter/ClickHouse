@@ -5,6 +5,9 @@ then
     # use GNU versions, their presence is ensured in cmake/tools.cmake
     GREP_CMD=ggrep
     FIND_CMD=gfind
+elif [[ "$OSTYPE" == solaris* ]] || [[ "$OSTYPE" == sunos* ]]; then
+    FIND_CMD=gfind
+    GREP_CMD=ggrep
 else
     FIND_CMD='find'
     GREP_CMD='grep'
@@ -200,7 +203,9 @@ libs=$(echo "${ROOT_PATH}/base/poco"; (${FIND_CMD} "${LIBS_PATH}" -mindepth 1 -m
 JOBS=$(nproc 2>/dev/null || echo 4)
 
 # Process in parallel and preserve deterministic output.
-c_cpp_output=$(printf '%s\n' "$libs" | xargs -P "${JOBS}" -I {} bash -c 'process_library "$@"' _ {})
+c_cpp_output=$(while IFS= read -r lib; do
+    process_library "$lib"
+done <<< "$libs")
 c_cpp_status=$?
 if [ "${c_cpp_status}" -ne 0 ]
 then
@@ -211,7 +216,10 @@ then
     printf '%s\n' "${c_cpp_output}" | LC_ALL=C sort
 fi
 
-rust_output=$(${FIND_CMD} "${LIBS_PATH}/rust_vendor/" -name 'Cargo.toml' | xargs -P "${JOBS}" -I {} bash -c 'process_rust_crate "$@"' _ {})
+rust_output=$(${FIND_CMD} "${LIBS_PATH}/rust_vendor/" -name 'Cargo.toml' |
+    while IFS= read -r toml; do
+        process_rust_crate "$toml"
+    done)
 rust_status=$?
 if [ "${rust_status}" -ne 0 ]
 then
