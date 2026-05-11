@@ -2,6 +2,8 @@
 #include <sys/mman.h>
 #include <sys/statvfs.h>
 #include <fcntl.h>
+#elif defined(OS_SUNOS)
+#   include <sys/statvfs.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <cstdlib>
@@ -210,6 +212,16 @@ int decompressFiles(int input_fd, char * path, char * name, bool & have_compress
         decompressed_full_size += le64toh(data.uncompressed_size);
         check_pointer += sizeof(FileData) + le64toh(data.name_length);
     }
+#ifdef OS_SUNOS
+    struct statvfs fs_info;
+    if (0 != fstatvfs(input_fd, &fs_info))
+    {
+        perror("fstatvfs");
+        if (0 != munmap(input, info_in.st_size))
+                perror("munmap");
+        return 1;
+    }
+#else
 
     /// Check free space
     struct statvfs fs_info;
@@ -218,6 +230,7 @@ int decompressFiles(int input_fd, char * path, char * name, bool & have_compress
         perror("fstatvfs");
         if (0 != munmap(input, info_in.st_size))
                 perror("munmap");
+#endif
         return 1;
     }
     /// Available space in bytes = free blocks * block size
