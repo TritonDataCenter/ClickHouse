@@ -13,6 +13,10 @@ if (OS_SUNOS)
     target_link_libraries (_poco_net PUBLIC socket nsl)
 endif ()
 
+if (OS_SUNOS)
+    target_link_libraries (_poco_net PUBLIC socket nsl)
+endif ()
+
 # TODO: remove these warning exclusions
 target_compile_options (_poco_net
     PRIVATE
