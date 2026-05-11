@@ -197,6 +197,28 @@ static PollPidResult pollPid(pid_t pid, int timeout_in_ms)
     Pfree(hdl);
     return result;
 }
+#elif defined(__sun)
+#include <libproc.h>
+
+namespace DB
+{
+
+static PollPidResult pollPid(pid_t pid, int timeout_in_ms)
+{
+    PollPidResult result = PollPidResult::FAILED;
+    int rc, perr;
+    struct ps_prochandle *hdl;
+    hdl = Pgrab(pid, PGRAB_RETAIN | PGRAB_FORCE | PGRAB_NOSTOP, &perr);
+    if (hdl == NULL)
+        return PollPidResult::FAILED;
+    rc = Pstopstatus(hdl, PCWSTOP, timeout_in_ms);
+    if (rc < 0 && errno == ENOENT)
+        result = PollPidResult::RESTART;
+    if (rc == 0 && Pstate(hdl) != PS_RUN)
+        result = PollPidResult::RESTART;
+    Pfree(hdl);
+    return result;
+}
 #else
     #error "Unsupported OS type"
 #endif
