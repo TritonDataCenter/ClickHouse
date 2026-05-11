@@ -69,7 +69,7 @@ enum ProgressOption
     DEFAULT,
     OFF,
     TTY,
-    ERR,
+    XERR,
 };
 ProgressOption toProgressOption(std::string progress);
 std::istream& operator>> (std::istream & in, ProgressOption & progress);

@@ -238,7 +238,7 @@ ProgressOption toProgressOption(std::string progress)
     if (progress == "TTY" || progress == "ON" || progress == "TRUE" || progress == "1" || progress == "YES")
         return ProgressOption::TTY;
     if (progress == "ERR")
-        return ProgressOption::ERR;
+        return ProgressOption::XERR;
     if (progress == "DEFAULT")
         return ProgressOption::DEFAULT;
 
@@ -1014,7 +1014,7 @@ void ClientBase::initTTYBuffer(ProgressOption progress_option, ProgressOption pr
     /// progress indication to a different terminal.
     int tty_fd = -1;
 
-    if (stderr_is_a_tty || progress == ProgressOption::ERR)
+    if (stderr_is_a_tty || progress == ProgressOption::XERR)
     {
         tty_fd = stderr_fd;
     }
@@ -3422,7 +3422,7 @@ void ClientBase::addOptionsToTheClientConfiguration(const CommandLineOptions & o
             case TTY:
                 getClientConfiguration().setString("progress", "tty");
                 break;
-            case ERR:
+            case XERR:
                 getClientConfiguration().setString("progress", "err");
                 break;
         }
