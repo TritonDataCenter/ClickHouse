@@ -1,3 +1,8 @@
+if (OS_SUNOS)
+    message(STATUS "Not building libarchive on illumos")
+    return()
+endif()
+
 set (LIBRARY_DIR "${ClickHouse_SOURCE_DIR}/contrib/libarchive")
 
 set(SRCS
