@@ -50,6 +50,12 @@
 #define HAVE_SELECT_H
 #define HAVE_SETJMP_H
 #define HAVE_SETJMP_H
+
+#ifdef __illumos__
+#define HAVE_POSIX_STRERROR_R 1
+#define HAVE_STRERROR_R 1
+#endif
+
 #define HAVE_STDINT_H
 #define HAVE_UNISTD_H
 #define HAVE_POLL_H
