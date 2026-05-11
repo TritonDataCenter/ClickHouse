@@ -1,7 +1,8 @@
-#if defined(OS_LINUX) || defined(OS_FREEBSD)
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SUNOS)
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #if defined(OS_FREEBSD)
 #include <sys/sysctl.h>
 #include <sys/user.h>
@@ -19,6 +20,10 @@
 #include <IO/ReadBufferFromMemory.h>
 #include <IO/ReadHelpers.h>
 
+#if defined(OS_SUNOS)
+#include <libproc.h>
+#undef C2
+#endif
 
 namespace DB
 {
@@ -151,6 +156,50 @@ MemoryStatisticsOS::Data MemoryStatisticsOS::get() const
     data.resident = kp.ki_rssize * pagesize;
     data.code = kp.ki_tsize * pagesize;
     data.data_and_stack = (kp.ki_dsize + kp.ki_ssize) * pagesize;
+
+    return data;
+}
+
+#endif
+
+#if defined(OS_SUNOS)
+
+namespace ErrorCodes
+{
+    extern const int FILE_DOESNT_EXIST;
+    extern const int CANNOT_OPEN_FILE;
+    extern const int CANNOT_READ_FROM_FILE_DESCRIPTOR;
+}
+
+MemoryStatisticsOS::MemoryStatisticsOS()
+{
+    pid_t self = ::getpid();
+    char fname[PATH_MAX];
+
+    (void) ::snprintf(fname, sizeof (fname), "/proc/%d/psinfo", self);
+    psinfo_fd = ::open(fname, O_RDONLY | O_CLOEXEC);
+    if (-1 == psinfo_fd) {
+        throwFromErrno("Cannot open file " + std::string(fname), errno == ENOENT ? ErrorCodes::FILE_DOESNT_EXIST : ErrorCodes::CANNOT_OPEN_FILE);
+    }
+}
+
+MemoryStatisticsOS::~MemoryStatisticsOS()
+{
+    ::close(psinfo_fd);
+}
+
+MemoryStatisticsOS::Data MemoryStatisticsOS::get() const
+{
+    Data data;
+    psinfo_t ps;
+    int rc;
+
+    rc = ::pread(psinfo_fd, &ps, sizeof (ps), 0);
+    if (rc < 0)
+        throwFromErrno("Cannot read from psinfo fd", ErrorCodes::CANNOT_READ_FROM_FILE_DESCRIPTOR);
+
+    data.virt = ps.pr_size * 1024;
+    data.resident = ps.pr_rssize * 1024;
 
     return data;
 }
