@@ -132,6 +132,7 @@ Timer::Timer()
 
 void Timer::createIfNecessary(UInt64 thread_id, int clock_type, int pause_signal)
 {
+#ifndef OS_SUNOS
     if (!timer_id)
     {
         struct sigevent sev {};
@@ -168,6 +169,7 @@ void Timer::createIfNecessary(UInt64 thread_id, int clock_type, int pause_signal
         timer_id.emplace(local_timer_id);
         CurrentMetrics::add(CurrentMetrics::CreatedTimersInQueryProfiler);
     }
+#endif /* OS_SUNOS */
 }
 
 void Timer::set(UInt64 period)
@@ -266,7 +268,7 @@ QueryProfilerBase<ProfilerImpl>::QueryProfilerBase(
         timer.cleanup();
         throw;
     }
-#else
+#elif defined(SIGEV_THREAD_ID)
     throw Exception(ErrorCodes::NOT_IMPLEMENTED, "QueryProfiler requires SIGEV_THREAD_ID");
 #endif
 }
@@ -295,6 +297,8 @@ QueryProfilerBase<ProfilerImpl>::~QueryProfilerBase()
     {
         tryLogCurrentException(log);
     }
+#else
+    throw Exception(ErrorCodes::CANNOT_CREATE_TIMER, "OS does not support QueryProfiler");
 }
 
 template <typename ProfilerImpl>
