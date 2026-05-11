@@ -3440,7 +3440,7 @@ void ClientBase::addOptionsToTheClientConfiguration(const CommandLineOptions & o
             case TTY:
                 getClientConfiguration().setString("progress-table", "tty");
                 break;
-            case ERR:
+            case XERR:
                 getClientConfiguration().setString("progress-table", "err");
                 break;
         }

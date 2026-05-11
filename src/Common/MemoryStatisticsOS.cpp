@@ -179,7 +179,7 @@ MemoryStatisticsOS::MemoryStatisticsOS()
     (void) ::snprintf(fname, sizeof (fname), "/proc/%d/psinfo", self);
     psinfo_fd = ::open(fname, O_RDONLY | O_CLOEXEC);
     if (-1 == psinfo_fd) {
-        throwFromErrno("Cannot open file " + std::string(fname), errno == ENOENT ? ErrorCodes::FILE_DOESNT_EXIST : ErrorCodes::CANNOT_OPEN_FILE);
+        throw ErrnoException(errno == ENOENT ? ErrorCodes::FILE_DOESNT_EXIST : ErrorCodes::CANNOT_OPEN_FILE, "Cannot open file " + std::string(fname));
     }
 }
 
@@ -196,7 +196,7 @@ MemoryStatisticsOS::Data MemoryStatisticsOS::get() const
 
     rc = ::pread(psinfo_fd, &ps, sizeof (ps), 0);
     if (rc < 0)
-        throwFromErrno("Cannot read from psinfo fd", ErrorCodes::CANNOT_READ_FROM_FILE_DESCRIPTOR);
+        throw ErrnoException(ErrorCodes::CANNOT_READ_FROM_FILE_DESCRIPTOR, "Cannot read from psinfo fd");
 
     data.virt = ps.pr_size * 1024;
     data.resident = ps.pr_rssize * 1024;

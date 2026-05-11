@@ -289,6 +289,7 @@ void QueryProfilerBase<ProfilerImpl>::setPeriod([[maybe_unused]] UInt64 period_)
 template <typename ProfilerImpl>
 QueryProfilerBase<ProfilerImpl>::~QueryProfilerBase()
 {
+#if defined(SIGEV_THREAD_ID)
     try
     {
         cleanup();
@@ -299,6 +300,7 @@ QueryProfilerBase<ProfilerImpl>::~QueryProfilerBase()
     }
 #else
     throw Exception(ErrorCodes::CANNOT_CREATE_TIMER, "OS does not support QueryProfiler");
+#endif
 }
 
 template <typename ProfilerImpl>
