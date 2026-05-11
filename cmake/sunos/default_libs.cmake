@@ -7,6 +7,7 @@
 # - __EXTENSIONS__: expose non-standard but necessary APIs
 add_compile_definitions(_REENTRANT _POSIX_PTHREAD_SEMANTICS __EXTENSIONS__)
 
+set (DEFAULT_LIBS "${DEFAULT_LIBS} -Lcontrib/libunwind-cmake/ -lunwind")
 set (DEFAULT_LIBS "-nodefaultlibs")
 
 set (BUILTINS_LIBRARY "-lgcc_s")
